@@ -895,3 +895,146 @@ button {
     transform: translateX(0);
   }
 }
+
+/* ==========================================================================
+   Custom Template Feature
+   ========================================================================== */
+
+/* Add Template Button */
+.add-template-btn {
+  background: linear-gradient(135deg, var(--color-secondary), var(--color-primary));
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.add-template-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.4);
+}
+
+/* Custom Template Modal */
+.custom-template-modal-content {
+  max-width: 500px;
+}
+
+.custom-template-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin: var(--spacing-lg) 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.form-group label {
+  font-weight: 600;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.form-group input[type="text"] {
+  background: var(--color-surface-light);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--color-text);
+  font-size: 1rem;
+  transition: border-color var(--transition-fast);
+}
+
+.form-group input[type="text"]:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* Template Upload Zone */
+.template-upload-zone {
+  border: 2px dashed var(--color-surface-light);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-align: center;
+}
+
+.template-upload-zone:hover,
+.template-upload-zone.dragover {
+  border-color: var(--color-primary);
+  background: rgba(108, 92, 231, 0.1);
+}
+
+.template-preview-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.template-preview-container .upload-icon {
+  font-size: 2.5rem;
+}
+
+.template-preview-container p {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.template-image-preview {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+}
+
+.preview-label {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+/* Custom Template Card Styling */
+.template-card.custom-template {
+  position: relative;
+}
+
+.template-card.custom-template .scene-tag {
+  background: linear-gradient(135deg, var(--color-secondary), var(--color-primary));
+}
+
+.delete-template-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: var(--color-error);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.template-card.custom-template:hover .delete-template-btn {
+  opacity: 1;
+}
+
+.delete-template-btn:hover {
+  background: #ff4444;
+  transform: scale(1.1);
+}

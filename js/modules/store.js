@@ -100,9 +100,39 @@ const DEFAULT_EDIT_PARAMS = {
   opacity: 100
 };
 
+// localStorage key for custom templates
+const CUSTOM_TEMPLATES_KEY = 'selfie-pullai-custom-templates';
+
+/**
+ * Load custom templates from localStorage
+ */
+function loadCustomTemplates() {
+  try {
+    const stored = localStorage.getItem(CUSTOM_TEMPLATES_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error('Failed to load custom templates:', error);
+  }
+  return [];
+}
+
+/**
+ * Save custom templates to localStorage
+ */
+function saveCustomTemplates(customTemplates) {
+  try {
+    localStorage.setItem(CUSTOM_TEMPLATES_KEY, JSON.stringify(customTemplates));
+  } catch (error) {
+    console.error('Failed to save custom templates:', error);
+  }
+}
+
 // Application state
 let state = {
-  templates: TEMPLATES,
+  templates: [...TEMPLATES, ...loadCustomTemplates()],
+  customTemplates: loadCustomTemplates(),
   selectedTemplate: null,
   userImage: null,
   editParams: { ...DEFAULT_EDIT_PARAMS },
@@ -204,6 +234,54 @@ function setProcessing(isProcessing) {
 }
 
 /**
+ * Add a custom template
+ */
+function addCustomTemplate(template) {
+  const customTemplate = {
+    ...template,
+    id: `custom-${Date.now()}`,
+    isCustom: true,
+    trendingScore: 0,
+    trendingRank: 999
+  };
+  
+  state.customTemplates.push(customTemplate);
+  state.templates = [...TEMPLATES, ...state.customTemplates];
+  saveCustomTemplates(state.customTemplates);
+  notifySubscribers('customTemplateAdded', customTemplate);
+  
+  return customTemplate;
+}
+
+/**
+ * Remove a custom template
+ */
+function removeCustomTemplate(templateId) {
+  const index = state.customTemplates.findIndex(t => t.id === templateId);
+  if (index !== -1) {
+    const removed = state.customTemplates.splice(index, 1)[0];
+    state.templates = [...TEMPLATES, ...state.customTemplates];
+    saveCustomTemplates(state.customTemplates);
+    
+    // Clear selection if removed template was selected
+    if (state.selectedTemplate?.id === templateId) {
+      state.selectedTemplate = null;
+    }
+    
+    notifySubscribers('customTemplateRemoved', removed);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Get custom templates only
+ */
+function getCustomTemplates() {
+  return [...state.customTemplates];
+}
+
+/**
  * Subscribe to state changes
  */
 function subscribe(callback) {
@@ -238,5 +316,8 @@ export const Store = {
   resetState,
   setProcessing,
   subscribe,
+  addCustomTemplate,
+  removeCustomTemplate,
+  getCustomTemplates,
   DEFAULT_EDIT_PARAMS
 };
