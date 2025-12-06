@@ -82,7 +82,18 @@ function cacheElements() {
     apiKeyInput: document.getElementById('api-key-input'),
     saveApiKeyBtn: document.getElementById('save-api-key-btn'),
     closeApiModalBtn: document.getElementById('close-api-modal-btn'),
-    apiStatus: document.getElementById('api-status')
+    apiStatus: document.getElementById('api-status'),
+    
+    // Custom Template Modal
+    addTemplateBtn: document.getElementById('add-template-btn'),
+    customTemplateModal: document.getElementById('custom-template-modal'),
+    templateNameInput: document.getElementById('template-name-input'),
+    celebrityNameInput: document.getElementById('celebrity-name-input'),
+    templateImageInput: document.getElementById('template-image-input'),
+    templateUploadZone: document.getElementById('template-upload-zone'),
+    templatePreviewContainer: document.getElementById('template-preview-container'),
+    saveTemplateBtn: document.getElementById('save-template-btn'),
+    closeTemplateModalBtn: document.getElementById('close-template-modal-btn')
   };
 }
 
@@ -119,6 +130,19 @@ function setupEventListeners() {
   elements.closeApiModalBtn?.addEventListener('click', closeApiKeyModal);
   elements.apiKeyModal?.addEventListener('click', handleModalBackdropClick);
   
+  // Custom Template Modal
+  elements.addTemplateBtn?.addEventListener('click', openCustomTemplateModal);
+  elements.saveTemplateBtn?.addEventListener('click', saveCustomTemplate);
+  elements.closeTemplateModalBtn?.addEventListener('click', closeCustomTemplateModal);
+  elements.customTemplateModal?.addEventListener('click', handleModalBackdropClick);
+  elements.templateUploadZone?.addEventListener('click', () => elements.templateImageInput?.click());
+  elements.templateUploadZone?.addEventListener('dragover', handleTemplateDragOver);
+  elements.templateUploadZone?.addEventListener('dragleave', handleTemplateDragLeave);
+  elements.templateUploadZone?.addEventListener('drop', handleTemplateDrop);
+  elements.templateImageInput?.addEventListener('change', handleTemplateImageSelect);
+  elements.templateNameInput?.addEventListener('input', validateCustomTemplateForm);
+  elements.celebrityNameInput?.addEventListener('input', validateCustomTemplateForm);
+  
   // Initialize canvas
   if (elements.canvas) {
     Canvas.init(elements.canvas);
@@ -144,6 +168,10 @@ function handleStateChange(event, data, state) {
       clearTemplateSelection();
       updateActionButtons();
       break;
+    case 'customTemplateAdded':
+    case 'customTemplateRemoved':
+      renderTemplates();
+      break;
   }
 }
 
@@ -157,15 +185,16 @@ function renderTemplates() {
   if (!container) return;
   
   container.innerHTML = templates.map(template => `
-    <div class="template-card" 
+    <div class="template-card ${template.isCustom ? 'custom-template' : ''}" 
          data-id="${template.id}" 
          tabindex="0" 
          role="button"
          aria-label="Select ${template.name} with ${template.celebrity}">
+      ${template.isCustom ? '<button class="delete-template-btn" aria-label="Delete template" data-id="' + template.id + '">✕</button>' : ''}
       <div class="scene-preview">
         <img src="${template.templateImage}" alt="${template.name}" loading="lazy" onerror="this.style.display='none'">
         <div class="scene-overlay"></div>
-        <span class="scene-tag">${template.scene}</span>
+        <span class="scene-tag">${template.isCustom ? 'Custom' : template.scene}</span>
         <span class="celebrity-overlay">📸 ${template.celebrity}</span>
       </div>
       <div class="template-info">
@@ -177,12 +206,24 @@ function renderTemplates() {
   
   // Add click listeners
   container.querySelectorAll('.template-card').forEach(card => {
-    card.addEventListener('click', () => handleTemplateSelect(card.dataset.id));
+    card.addEventListener('click', (e) => {
+      // Don't select if clicking delete button
+      if (e.target.classList.contains('delete-template-btn')) return;
+      handleTemplateSelect(card.dataset.id);
+    });
     card.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         handleTemplateSelect(card.dataset.id);
       }
+    });
+  });
+  
+  // Add delete button listeners for custom templates
+  container.querySelectorAll('.delete-template-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      handleDeleteCustomTemplate(btn.dataset.id);
     });
   });
 }
@@ -952,6 +993,175 @@ function showToast(message, type = 'info') {
   
   // Auto-remove after 3 seconds
   setTimeout(() => toast.remove(), 3000);
+}
+
+// ============================================
+// Custom Template Modal Functions
+// ============================================
+
+// Pending custom template image data
+let pendingTemplateImage = null;
+
+/**
+ * Open custom template modal
+ */
+function openCustomTemplateModal() {
+  elements.customTemplateModal?.classList.remove('hidden');
+  elements.templateNameInput?.focus();
+  resetCustomTemplateForm();
+}
+
+/**
+ * Close custom template modal
+ */
+function closeCustomTemplateModal() {
+  elements.customTemplateModal?.classList.add('hidden');
+  resetCustomTemplateForm();
+}
+
+/**
+ * Reset custom template form
+ */
+function resetCustomTemplateForm() {
+  if (elements.templateNameInput) elements.templateNameInput.value = '';
+  if (elements.celebrityNameInput) elements.celebrityNameInput.value = '';
+  if (elements.templateImageInput) elements.templateImageInput.value = '';
+  if (elements.saveTemplateBtn) elements.saveTemplateBtn.disabled = true;
+  pendingTemplateImage = null;
+  
+  // Reset preview
+  if (elements.templatePreviewContainer) {
+    elements.templatePreviewContainer.innerHTML = `
+      <span class="upload-icon">📷</span>
+      <p>Click or drag to upload template image</p>
+    `;
+  }
+}
+
+/**
+ * Handle template image file select
+ */
+function handleTemplateImageSelect(e) {
+  const file = e.target.files?.[0];
+  if (file) processTemplateImage(file);
+}
+
+/**
+ * Handle template drag over
+ */
+function handleTemplateDragOver(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  elements.templateUploadZone?.classList.add('dragover');
+}
+
+/**
+ * Handle template drag leave
+ */
+function handleTemplateDragLeave(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  elements.templateUploadZone?.classList.remove('dragover');
+}
+
+/**
+ * Handle template drop
+ */
+function handleTemplateDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  elements.templateUploadZone?.classList.remove('dragover');
+  
+  const file = e.dataTransfer?.files?.[0];
+  if (file) processTemplateImage(file);
+}
+
+/**
+ * Process template image file
+ */
+async function processTemplateImage(file) {
+  // Validate file type
+  const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!validTypes.includes(file.type)) {
+    showToast('Please upload a JPG, PNG, or WebP image', 'error');
+    return;
+  }
+  
+  // Validate file size (10MB max for templates)
+  const maxSize = 10 * 1024 * 1024;
+  if (file.size > maxSize) {
+    showToast('Image must be less than 10MB', 'error');
+    return;
+  }
+  
+  try {
+    const imageData = await readFileAsDataURL(file);
+    pendingTemplateImage = imageData;
+    
+    // Show preview
+    if (elements.templatePreviewContainer) {
+      elements.templatePreviewContainer.innerHTML = `
+        <img src="${imageData}" alt="Template preview" class="template-image-preview">
+        <p class="preview-label">✓ Image ready</p>
+      `;
+    }
+    
+    validateCustomTemplateForm();
+  } catch (error) {
+    console.error('Error loading template image:', error);
+    showToast('Failed to load image', 'error');
+  }
+}
+
+/**
+ * Validate custom template form
+ */
+function validateCustomTemplateForm() {
+  const name = elements.templateNameInput?.value?.trim();
+  const celebrity = elements.celebrityNameInput?.value?.trim();
+  const hasImage = !!pendingTemplateImage;
+  
+  const isValid = name && celebrity && hasImage;
+  
+  if (elements.saveTemplateBtn) {
+    elements.saveTemplateBtn.disabled = !isValid;
+  }
+}
+
+/**
+ * Save custom template
+ */
+function saveCustomTemplate() {
+  const name = elements.templateNameInput?.value?.trim();
+  const celebrity = elements.celebrityNameInput?.value?.trim();
+  
+  if (!name || !celebrity || !pendingTemplateImage) {
+    showToast('Please fill all fields and upload an image', 'error');
+    return;
+  }
+  
+  const template = {
+    name: name,
+    celebrity: celebrity,
+    scene: 'custom',
+    description: `Custom selfie with ${celebrity}`,
+    prompt: `Create an ultra-realistic image showing the person uploaded taking a selfie with ${celebrity}`,
+    templateImage: pendingTemplateImage
+  };
+  
+  Store.addCustomTemplate(template);
+  showToast(`Template "${name}" saved!`, 'success');
+  closeCustomTemplateModal();
+}
+
+/**
+ * Handle delete custom template
+ */
+function handleDeleteCustomTemplate(templateId) {
+  if (confirm('Are you sure you want to delete this custom template?')) {
+    Store.removeCustomTemplate(templateId);
+    showToast('Template deleted', 'success');
+  }
 }
 
 // Export UI API

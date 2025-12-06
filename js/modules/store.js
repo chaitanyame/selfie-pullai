@@ -14,23 +14,23 @@
 const TEMPLATES = [
   { 
     id: 'scene-1', 
-    name: 'Beach Sunset with Amitabh', 
-    celebrity: 'Amitabh Bachchan',
-    scene: 'beach',
-    description: 'Sunset selfie on the beach with Big B',
-    prompt: 'Create an ultra-realistic 4k image showing the person uploaded taking a selfie with Amitabh Bachchan on a beautiful beach at sunset, golden hour lighting, waves in background',
-    templateImage: 'assets/templates/template-amitabh-beach.png',
-    trendingScore: 98, 
-    trendingRank: 1 
-  },
-  { 
-    id: 'scene-2', 
     name: 'Beach Day with SRK', 
     celebrity: 'Shah Rukh Khan',
     scene: 'beach',
     description: 'Beach selfie with King Khan',
     prompt: 'Create an ultra-realistic image showing the person uploaded taking a selfie with Shah Rukh Khan on a tropical beach, sunny day, ocean in background',
-    templateImage: 'assets/templates/template-srk-beach.png',
+    templateImage: 'assets/templates/template -SRK -beach.png',
+    trendingScore: 98, 
+    trendingRank: 1 
+  },
+  { 
+    id: 'scene-2', 
+    name: 'Selfie with Virat Kohli', 
+    celebrity: 'Virat Kohli',
+    scene: 'outdoor',
+    description: 'Selfie with cricket legend Virat Kohli',
+    prompt: 'Create an ultra-realistic image showing the person uploaded taking a selfie with Virat Kohli, cricket star, dynamic sports atmosphere',
+    templateImage: 'assets/templates/Template -Virat Kohli.png',
     trendingScore: 97, 
     trendingRank: 2 
   },
@@ -44,50 +44,6 @@ const TEMPLATES = [
     templateImage: 'assets/templates/template-emma-stone-beach.png',
     trendingScore: 95, 
     trendingRank: 3 
-  },
-  { 
-    id: 'scene-4', 
-    name: 'Celebrity Scene 4', 
-    celebrity: 'Celebrity',
-    scene: 'outdoor',
-    description: 'Outdoor celebrity selfie',
-    prompt: 'Create an ultra-realistic 4k image showing the person uploaded in a celebrity selfie scene',
-    templateImage: 'assets/templates/template-4.png',
-    trendingScore: 92, 
-    trendingRank: 4 
-  },
-  { 
-    id: 'scene-5', 
-    name: 'Celebrity Scene 5', 
-    celebrity: 'Celebrity',
-    scene: 'outdoor',
-    description: 'Outdoor celebrity selfie',
-    prompt: 'Create an image showing the person uploaded in a celebrity selfie moment',
-    templateImage: 'assets/templates/template-5.png',
-    trendingScore: 90, 
-    trendingRank: 5 
-  },
-  { 
-    id: 'scene-6', 
-    name: 'Celebrity Scene 6', 
-    celebrity: 'Celebrity',
-    scene: 'outdoor',
-    description: 'Celebrity outdoor moment',
-    prompt: 'Create an ultra-realistic 4k image showing the person uploaded in a celebrity selfie',
-    templateImage: 'assets/templates/template-6.png',
-    trendingScore: 88, 
-    trendingRank: 6 
-  },
-  { 
-    id: 'scene-7', 
-    name: 'Celebrity Scene 7', 
-    celebrity: 'Celebrity',
-    scene: 'outdoor',
-    description: 'Fun celebrity selfie moment',
-    prompt: 'Create an image showing the person uploaded taking a fun selfie with a celebrity',
-    templateImage: 'assets/templates/template-7.png',
-    trendingScore: 85, 
-    trendingRank: 7 
   }
 ];
 
@@ -100,9 +56,39 @@ const DEFAULT_EDIT_PARAMS = {
   opacity: 100
 };
 
+// localStorage key for custom templates
+const CUSTOM_TEMPLATES_KEY = 'selfie-pullai-custom-templates';
+
+/**
+ * Load custom templates from localStorage
+ */
+function loadCustomTemplates() {
+  try {
+    const stored = localStorage.getItem(CUSTOM_TEMPLATES_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error('Failed to load custom templates:', error);
+  }
+  return [];
+}
+
+/**
+ * Save custom templates to localStorage
+ */
+function saveCustomTemplates(customTemplates) {
+  try {
+    localStorage.setItem(CUSTOM_TEMPLATES_KEY, JSON.stringify(customTemplates));
+  } catch (error) {
+    console.error('Failed to save custom templates:', error);
+  }
+}
+
 // Application state
 let state = {
-  templates: TEMPLATES,
+  templates: [...TEMPLATES, ...loadCustomTemplates()],
+  customTemplates: loadCustomTemplates(),
   selectedTemplate: null,
   userImage: null,
   editParams: { ...DEFAULT_EDIT_PARAMS },
@@ -204,6 +190,54 @@ function setProcessing(isProcessing) {
 }
 
 /**
+ * Add a custom template
+ */
+function addCustomTemplate(template) {
+  const customTemplate = {
+    ...template,
+    id: `custom-${Date.now()}`,
+    isCustom: true,
+    trendingScore: 0,
+    trendingRank: 999
+  };
+  
+  state.customTemplates.push(customTemplate);
+  state.templates = [...TEMPLATES, ...state.customTemplates];
+  saveCustomTemplates(state.customTemplates);
+  notifySubscribers('customTemplateAdded', customTemplate);
+  
+  return customTemplate;
+}
+
+/**
+ * Remove a custom template
+ */
+function removeCustomTemplate(templateId) {
+  const index = state.customTemplates.findIndex(t => t.id === templateId);
+  if (index !== -1) {
+    const removed = state.customTemplates.splice(index, 1)[0];
+    state.templates = [...TEMPLATES, ...state.customTemplates];
+    saveCustomTemplates(state.customTemplates);
+    
+    // Clear selection if removed template was selected
+    if (state.selectedTemplate?.id === templateId) {
+      state.selectedTemplate = null;
+    }
+    
+    notifySubscribers('customTemplateRemoved', removed);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Get custom templates only
+ */
+function getCustomTemplates() {
+  return [...state.customTemplates];
+}
+
+/**
  * Subscribe to state changes
  */
 function subscribe(callback) {
@@ -238,5 +272,8 @@ export const Store = {
   resetState,
   setProcessing,
   subscribe,
+  addCustomTemplate,
+  removeCustomTemplate,
+  getCustomTemplates,
   DEFAULT_EDIT_PARAMS
 };
