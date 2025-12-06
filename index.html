@@ -66,7 +66,13 @@
   <main class="app-main" data-testid="app-main">
     <!-- Section 1: Template Carousel -->
     <section id="templates" class="section-templates" aria-labelledby="templates-heading" data-testid="templates-section">
-      <h2 id="templates-heading" class="visually-hidden">Celebrity Templates</h2>
+      <div class="section-header">
+        <h2 id="templates-heading" class="section-title">
+          <span class="step-badge">1</span>
+          Pick a Celebrity Scene
+        </h2>
+        <p class="section-subtitle">Choose a template to put your face into</p>
+      </div>
       <div class="carousel-container" data-testid="carousel-container">
         <!-- Templates will be rendered here by JS -->
       </div>
@@ -74,19 +80,34 @@
 
     <!-- Section 2: Upload Area -->
     <section id="upload" class="section-upload" aria-labelledby="upload-heading" data-testid="upload-section">
-      <h2 id="upload-heading" class="visually-hidden">Upload Your Photo</h2>
+      <div class="section-header">
+        <h2 id="upload-heading" class="section-title">
+          <span class="step-badge">2</span>
+          Upload Your Photo
+        </h2>
+        <p class="section-subtitle">Add a clear photo of your face for best results</p>
+      </div>
       <div class="upload-zone" role="button" tabindex="0" aria-label="Drop an image here or click to upload" data-testid="upload-zone">
+        <div class="upload-icon">📸</div>
         <p>Drag & drop your photo here</p>
-        <p>or</p>
+        <p class="upload-divider">or</p>
         <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" class="visually-hidden" data-testid="file-input">
-        <label for="file-input" class="upload-btn" data-testid="upload-btn">Choose File</label>
-        <button id="camera-btn" class="camera-btn" aria-label="Take a photo with camera" data-testid="camera-btn">📷 Take Photo</button>
+        <div class="upload-buttons">
+          <label for="file-input" class="upload-btn" data-testid="upload-btn">📁 Choose File</label>
+          <button id="camera-btn" class="camera-btn" aria-label="Take a photo with camera" data-testid="camera-btn">📷 Take Photo</button>
+        </div>
       </div>
     </section>
 
     <!-- Section 3: Preview & Generate -->
     <section id="preview-section" class="section-preview hidden" aria-labelledby="preview-heading" data-testid="preview-section">
-      <h2 id="preview-heading">Ready to Generate</h2>
+      <div class="section-header">
+        <h2 id="preview-heading" class="section-title">
+          <span class="step-badge">3</span>
+          Ready to Generate
+        </h2>
+        <p class="section-subtitle">Review your selections and create your AI selfie</p>
+      </div>
       <div class="preview-container" data-testid="preview-container">
         <div class="preview-card template-preview" data-testid="template-preview">
           <h3>Template</h3>
@@ -109,7 +130,7 @@
         </div>
       </div>
       <button id="generate-btn" class="generate-btn" data-testid="generate-btn">
-        ✨ Generate Selfie with AI
+        ✨ Generate AI Selfie
       </button>
     </section>
 
