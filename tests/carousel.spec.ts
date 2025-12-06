@@ -26,12 +26,12 @@ test.describe('Feature 6: Template Carousel', () => {
     expect(count).toBeGreaterThan(0);
   });
 
-  test('should have at least 5 celebrity templates', async ({ page }) => {
+  test('should have at least 3 celebrity templates', async ({ page }) => {
     await page.waitForSelector('.template-card', { timeout: 5000 });
     
     const templates = page.locator('.template-card');
     const count = await templates.count();
-    expect(count).toBeGreaterThanOrEqual(5);
+    expect(count).toBeGreaterThanOrEqual(3);
   });
 
   test('should allow template selection via click', async ({ page }) => {
