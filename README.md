@@ -6,9 +6,11 @@
 
 <p align="center">
   <a href="#features">Features</a> •
-  <a href="#demo">Demo</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#api-setup">API Setup</a> •
+  <a href="#custom-templates">Custom Templates</a> •
+  <a href="#testing">Testing</a> •
+  <a href="#faq">FAQ</a> •
   <a href="#contributing">Contributing</a> •
   <a href="#license">License</a>
 </p>
@@ -40,6 +42,7 @@
 3. **Preview side-by-side** - See your photo next to the template
 4. **Generate with AI** - Click "Generate" to create your AI selfie!
 5. **Download & Share** - Save your creation or share with friends
+6. **Add your own templates** — Use the **➕ Add Template** button to upload custom celebrity images and create templates from your own photos
 
 ## 🚀 Quick Start
 
@@ -88,6 +91,20 @@ This app uses the **Google Gemini API** for AI image generation.
 ### Supported Models
 
 The app uses `gemini-2.0-flash-exp` which supports native image generation.
+
+## 🖼️ Custom Templates
+
+You're not limited to the built-in celebrity scenes! The app lets you upload your own images to create custom templates:
+
+1. Click the **➕ Add Template** button in the header
+2. Enter a **Template Name** (e.g., "Beach with Taylor Swift")
+3. Enter the **Celebrity Name** (e.g., "Taylor Swift")
+4. **Upload an image** — drag & drop or click to select the celebrity/scene photo
+5. Click **Save Template** — your custom template appears in the carousel alongside the built-in ones
+
+**How it works:** Custom templates are stored in your browser's `localStorage` and persist across sessions. The AI model receives both your face photo and the custom template image to generate a realistic selfie composite.
+
+**Managing templates:** Custom templates can be removed, and they're clearly marked with a custom badge in the carousel. All processing stays client-side — your images are never uploaded to any server other than Google's Gemini API.
 
 ## 📁 Project Structure
 
@@ -163,8 +180,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## 📋 Roadmap
 
-- [ ] More celebrity templates
-- [ ] Custom template upload
+- [x] More celebrity templates
+- [x] Custom template upload
 - [ ] Style presets (vintage, cartoon, anime, etc.)
 - [ ] Social sharing integration
 - [ ] PWA support for offline use
@@ -188,6 +205,26 @@ Your privacy is important to us:
 - **Storage**: IndexedDB, LocalStorage
 - **Testing**: Playwright
 - **Build**: None required! (Zero build tooling)
+
+## ❓ Frequently Asked Questions
+
+### Why is my generated image blurry or low-quality?
+The Gemini 2.0 Flash model outputs images at a default resolution. For best results, use a clear, well-lit front-facing photo with your face prominently visible.
+
+### The "Generate" button is disabled — what's wrong?
+Make sure you've completed all three steps: (1) selected a celebrity template, (2) uploaded your photo, and (3) configured your Gemini API key via the 🔑 button in the header.
+
+### Is my API key safe?
+Yes. Your API key is stored in your browser's `localStorage` and is only sent to Google's Gemini API endpoint. It is never transmitted to any other server, logged, or shared.
+
+### Can I use the app offline?
+Currently the app requires an internet connection for the Gemini API call. Offline PWA support is on the [roadmap](#-roadmap). Template browsing and photo upload work offline.
+
+### Why does the "Add Template" feature exist if I can already choose celebrities?
+The built-in templates are a curated set of popular scenes. The custom template feature lets you upload **any** celebrity or scene image — your favorite actor, a family member, a fictional character, or a completely original backdrop.
+
+### How many custom templates can I add?
+There's no hard limit, but your browser's `localStorage` has a ~5 MB cap. Each template image is stored as a base64 data URL, so we recommend keeping 10–20 custom templates for optimal performance.
 
 ## 📄 License
 
