@@ -8,7 +8,9 @@
   <a href="#features">Features</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#api-setup">API Setup</a> •
+  <a href="#image-editing-controls">Editing</a> •
   <a href="#custom-templates">Custom Templates</a> •
+  <a href="#history-management">History</a> •
   <a href="#testing">Testing</a> •
   <a href="#faq">FAQ</a> •
   <a href="#contributing">Contributing</a> •
@@ -38,11 +40,12 @@
 ## 🎬 How It Works
 
 1. **Select a celebrity template** - Browse the carousel of celebrity scenes
-2. **Upload your photo** - Drag & drop, click to upload, or use your camera
-3. **Preview side-by-side** - See your photo next to the template
-4. **Generate with AI** - Click "Generate" to create your AI selfie!
-5. **Download & Share** - Save your creation or share with friends
-6. **Add your own templates** — Use the **➕ Add Template** button to upload custom celebrity images and create templates from your own photos
+3. **Upload your photo** - Drag & drop, click to upload, or use your camera
+4. **Adjust your photo** - Drag to position, scale, rotate, or adjust opacity until it looks right
+5. **Generate with AI** - Click "Generate" to create your AI selfie!
+6. **Download & Share** - Save your creation or share with friends
+7. **Browse history** - Past creations are automatically saved in the history panel
+8. **Add your own templates** — Use the **➕ Add Template** button to upload custom celebrity images and create templates from your own photos
 
 ## 🚀 Quick Start
 
@@ -105,6 +108,45 @@ You're not limited to the built-in celebrity scenes! The app lets you upload you
 **How it works:** Custom templates are stored in your browser's `localStorage` and persist across sessions. The AI model receives both your face photo and the custom template image to generate a realistic selfie composite.
 
 **Managing templates:** Custom templates can be removed, and they're clearly marked with a custom badge in the carousel. All processing stays client-side — your images are never uploaded to any server other than Google's Gemini API.
+
+## 🎨 Image Editing Controls
+
+Before generating, you can fine-tune your photo's placement and appearance in the preview canvas:
+
+| Control  | How to Use | What It Does |
+|----------|-----------|--------------|
+| **Drag to Position** 🖱️ | Click and drag your photo on the canvas | Moves the user photo around the scene |
+| **Scale** 🔍 | Slider (0–200%) | Adjusts how large your face appears in the composite |
+| **Rotation** 🔄 | Slider (0–360°) | Rotates your photo to match the angle of the scene |
+| **Opacity** 👻 | Slider (0–100%) | Blends your photo for a more natural composite |
+
+These adjustments are reflected in real time on the canvas. Once you're happy with the preview, hit **Generate** — the AI model receives the template image, your adjusted photo, and a crafted prompt to produce the final selfie.
+
+### Canvas Preview Features
+
+- **Real-time rendering** — Uses `requestAnimationFrame` for smooth, lag-free preview updates
+- **Drag & drop positioning** — Your photo can be dragged anywhere on the 800×800 canvas
+- **Aspect-ratio-aware** — Templates and photos are automatically scaled to cover the canvas while maintaining proportions
+- **Multi-device input** — Mouse and touch events both supported for mobile and desktop
+
+## 💾 History Management
+
+Every generated selfie is automatically saved to your browser's **IndexedDB** — your history persists across sessions without any server-side storage.
+
+```js
+// Your history lives entirely in your browser
+// DB Name: SelfiePullAI | Store: history | Max: 10 items
+```
+
+| Feature | Detail |
+|---------|--------|
+| **Auto-save** | Every generated image is saved with timestamp, template used, and edit parameters |
+| **Browsing** | Scroll through your past creations in the history panel |
+| **Max capacity** | Keeps the most recent 10 images; oldest are automatically trimmed |
+| **Data stored** | Original photo, template ID, edit params (position/scale/rotation/opacity), final generated image |
+| **Privacy** | Zero data ever leaves your browser — no cloud sync, no telemetry |
+
+To clear your history, use the **Clear History** button in the app — this purges all stored images from IndexedDB.
 
 ## 📁 Project Structure
 
