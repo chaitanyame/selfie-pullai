@@ -40,12 +40,12 @@
 ## 🎬 How It Works
 
 1. **Select a celebrity template** - Browse the carousel of celebrity scenes
-3. **Upload your photo** - Drag & drop, click to upload, or use your camera
-4. **Adjust your photo** - Drag to position, scale, rotate, or adjust opacity until it looks right
-5. **Generate with AI** - Click "Generate" to create your AI selfie!
-6. **Download & Share** - Save your creation or share with friends
-7. **Browse history** - Past creations are automatically saved in the history panel
-8. **Add your own templates** — Use the **➕ Add Template** button to upload custom celebrity images and create templates from your own photos
+2. **Upload your photo** - Drag & drop, click to upload, or use your camera
+3. **Adjust your photo** - Use the position / scale / rotation / opacity controls until it looks right
+4. **Generate with AI** - Click "Generate" to create your AI selfie!
+5. **Download & Share** - Save your creation or share with friends
+6. **Browse history** - Past creations are automatically saved in the history panel
+7. **Add your own templates** — Use the **➕ Add Template** button to upload custom celebrity images and create templates from your own photos
 
 ## 🚀 Quick Start
 
@@ -116,16 +116,18 @@ Before generating, you can fine-tune your photo's placement and appearance in th
 | Control  | How to Use | What It Does |
 |----------|-----------|--------------|
 | **Drag to Position** 🖱️ | Click and drag your photo on the canvas | Moves the user photo around the scene |
-| **Scale** 🔍 | Slider (0–200%) | Adjusts how large your face appears in the composite |
+| **Scale** 🔍 | Slider (50–200%) | Adjusts how large your face appears in the composite |
 | **Rotation** 🔄 | Slider (0–360°) | Rotates your photo to match the angle of the scene |
 | **Opacity** 👻 | Slider (0–100%) | Blends your photo for a more natural composite |
 
-These adjustments are reflected in real time on the canvas. Once you're happy with the preview, hit **Generate** — the AI model receives the template image, your adjusted photo, and a crafted prompt to produce the final selfie.
+These controls update the app's edit-parameter store (position, scale, rotation, opacity), and the values are recorded on each history entry for reference.
+
+> **Note on the current build:** the controls are fully wired in the UI, but the renderer currently displays the finished AI composite cover-fit on the 800×800 canvas, and the Gemini request sends your *original* upload — so scale / rotation / opacity / position do not yet transform the live preview or the generated result. Applying these transforms to the composite is a planned editing enhancement (see [Roadmap](#-roadmap)).
 
 ### Canvas Preview Features
 
 - **Real-time rendering** — Uses `requestAnimationFrame` for smooth, lag-free preview updates
-- **Drag & drop positioning** — Your photo can be dragged anywhere on the 800×800 canvas
+- **Drag & drop positioning** — Mouse & touch handlers track position on the 800×800 canvas (staged as in the editing note above)
 - **Aspect-ratio-aware** — Templates and photos are automatically scaled to cover the canvas while maintaining proportions
 - **Multi-device input** — Mouse and touch events both supported for mobile and desktop
 
@@ -165,18 +167,22 @@ selfie-pullai/
 │       └── db.js           # IndexedDB history
 ├── assets/
 │   └── templates/          # Celebrity template images
-├── tests/                  # Playwright tests (132 tests)
+├── tests/                  # Playwright specs (66 cases × 2 projects = 132 runs)
 └── package.json
 ```
 
 ## 🧪 Testing
 
-The project includes comprehensive Playwright tests:
+The project includes a comprehensive Playwright test suite:
 
 ```bash
-# Run all tests (132 tests)
+# Run the full suite
 npm test
+```
 
+**66 test cases** across **5 spec files** (`actions`, `canvas`, `carousel`, `structure`, `upload`), each executed in **two** browser projects — Desktop Chrome and Mobile Chrome (Pixel 5) — for a total of **132 test executions**:
+
+```bash
 # Run with UI
 npx playwright test --ui
 
@@ -224,6 +230,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 - [x] More celebrity templates
 - [x] Custom template upload
+- [ ] Apply live editing transforms (scale/rotation/opacity/position) to the composite
 - [ ] Style presets (vintage, cartoon, anime, etc.)
 - [ ] Social sharing integration
 - [ ] PWA support for offline use
@@ -267,6 +274,9 @@ The built-in templates are a curated set of popular scenes. The custom template 
 
 ### How many custom templates can I add?
 There's no hard limit, but your browser's `localStorage` has a ~5 MB cap. Each template image is stored as a base64 data URL, so we recommend keeping 10–20 custom templates for optimal performance.
+
+### Do the scale, rotation, and opacity controls change my final image?
+Not yet. In the current build the controls update the edit-parameter store and are recorded on each history entry, but the Gemini request sends your *original* upload and the result is shown cover-fit — the transforms are applied neither to the preview nor to the output. Live composite editing is on the [roadmap](#-roadmap).
 
 ## 📄 License
 
